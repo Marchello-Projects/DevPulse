@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    PING_INTERVAL_SECONDS: int = 60
+    PING_TIMEOUT_SECONDS: float = 10.0
+
     @property
     def DATABASE_URL(self) -> str:
         return (

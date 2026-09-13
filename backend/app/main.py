@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -9,13 +11,21 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
 from app.models import PingResult, Project, User
+from app.services.scheduler import run_ping_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    scheduler_task = asyncio.create_task(run_ping_scheduler())
+
     yield
+
+    scheduler_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await scheduler_task
     await engine.dispose()
 
 

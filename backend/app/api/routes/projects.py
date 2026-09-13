@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.crud.ping import get_ping_history
 from app.crud.project import (
     create_project,
     delete_project,
@@ -12,8 +13,10 @@ from app.crud.project import (
     update_project,
 )
 from app.db.session import get_db
+from app.models.ping import PingResult
 from app.models.project import Project
 from app.models.user import User
+from app.schemas.ping import PingResultRead
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -69,3 +72,11 @@ async def delete_project_endpoint(
     db: AsyncSession = Depends(get_db),
 ) -> None:
     await delete_project(db, project)
+
+
+@router.get("/{project_id}/pings", response_model=list[PingResultRead])
+async def list_project_pings(
+    project: Project = Depends(_get_owned_project),
+    db: AsyncSession = Depends(get_db),
+) -> list[PingResult]:
+    return await get_ping_history(db, project.id)
