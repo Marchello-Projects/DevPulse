@@ -1,9 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.db.base import Base
+from app.db.session import engine
+from app.models import PingResult, Project, User
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await engine.dispose()
+
 
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.PROJECT_NAME,
     description=(
         "DevPulse is a monitoring service for pet projects and APIs. "
