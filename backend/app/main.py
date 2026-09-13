@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.auth import router as auth_router
+from app.api.routes.projects import router as projects_router
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
@@ -50,3 +51,4 @@ def health_check() -> dict[str, str]:
 
 
 app.include_router(auth_router)
+app.include_router(projects_router)
